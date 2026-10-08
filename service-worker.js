@@ -1,5 +1,5 @@
-const CACHE_NAME='eduspace-v6';
+const CACHE_NAME='eduspace-v5';
 const FILES=['./','./index.html','./1.html','./2.html','./3.html','./4.html','./5.html','./6.html','./7.html','./8.html','./9.html','./10.html','./manifest.json','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const url=new URL(e.request.url);if(url.origin!==location.origin)return;e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(response=>{if(response.ok&&FILES.includes(url.pathname.replace(location.pathname.substring(0,location.pathname.lastIndexOf('/')+1),''))) {const copy=response.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,copy))}return response}).catch(()=>caches.match('./index.html')))});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const url=new URL(e.request.url);if(url.origin!==location.origin)return;e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(response=>{if(response.ok&&FILES.includes('./'+url.pathname.split('/').pop())){const copy=response.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,copy))}return response}).catch(()=>caches.match('./index.html')))});
