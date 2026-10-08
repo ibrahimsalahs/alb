@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة التحديث</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(145deg,#10091a,#21122d 55%,#120b1d);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}.box{width:100%;max-width:460px;background:#1b1025;border:1px solid #ffffff0d;border-radius:24px;padding:30px;box-shadow:0 12px 35px #00000045;text-align:center}.icon{width:72px;height:72px;margin:0 auto 18px;border-radius:20px;background:#d946ef18;display:flex;align-items:center;justify-content:center;font-size:32px}.title{font-size:24px;font-weight:700;color:#fff;margin-bottom:10px}.desc{font-size:15px;color:#bda9c7;line-height:1.7;margin-bottom:25px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}button{width:100%;border:0;border-radius:14px;padding:15px;background:linear-gradient(135deg,#9333ea,#db2777);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}button:hover{background:linear-gradient(135deg,#7c3aed,#be185d)}button:disabled{opacity:.6;cursor:not-allowed}.status{margin-top:20px;min-height:24px;font-size:15px;font-weight:600;color:#e5d7eb}.time{margin-top:8px;min-height:20px;font-size:14px;color:#bda9c7}
+</style>
+</head>
+<body>
+<div class="box">
+<div class="icon">⚙️</div>
+<div class="title">لوحة تحديث النظام</div>
+<div class="desc">اختر العملية التي تريد تنفيذها.</div>
+<div class="buttons">
+<button onclick="run('setup',this)">📋 إعداد الصفحات</button>
+<button onclick="run('subscriptions',this)">🔄 تحديث الاشتراكات</button>
+<button onclick="run('results',this)">📊 تحديث النتائج</button>
+<button onclick="run('invoice',this)">🧾 تحديث الفاتورة</button>
+<button onclick="run('courses',this)">📚 تحديث الكورسات</button>
+</div>
+<div class="status" id="status"></div>
+<div class="time" id="time"></div>
+</div>
+<script>
+const URLS={setup:"https://script.google.com/macros/s/AKfycbyIRH51PdeGyQuBStX06wW4PV1H4yeXntS6HzE0oWA0cuStRrm_MWYwzIeqM8e_5N02/exec",subscriptions:"https://script.google.com/macros/s/AKfycbz0UJBLOOyiHOBe8KVCw2HEsXZeI3tPrD93ZuAApjb1ZS6tBIY5IdAYbrTcQok7PjRI/exec",results:"https://script.google.com/macros/s/AKfycbzqU2FCTIekvgcm-BXhCeEolg-Vj4j2lDlxnGs8SS6hxxy0v2rserZVu7kgh2n87nJS2Q/exec",invoice:"https://script.google.com/macros/s/AKfycbxdUNrNaH1AOIFf9yrrzJiHYuxTDQ3vAzDxKhHzsv-8KyoNIOAvZoZMIHwjAZCWvEpXOA/exec",courses:"https://script.google.com/macros/s/AKfycby5ZqezZO_4B5MgS9DuWNZcEowHRy-xjmGiyljo1l6qBVWXWd7MBmBcEbnz7jPUqxR0IQ/exec"};
+const status=document.getElementById("status"),time=document.getElementById("time");
+async function run(type,btn){document.querySelectorAll("button").forEach(b=>b.disabled=true);const names={setup:"الصفحات",subscriptions:"الاشتراكات",results:"النتائج",invoice:"الفاتورة",courses:"الكورسات"};status.textContent=type==="setup"?"جاري إنشاء الصفحات...":"جاري تحديث "+names[type]+"...";time.textContent="";const start=performance.now();try{const action=type==="invoice"?"invoice":type==="setup"?"setup":"update";const r=await fetch(URLS[type]+"?action="+action+"&t="+Date.now(),{method:"GET",cache:"no-store"});const t=await r.text();let data;try{data=JSON.parse(t)}catch(e){}const duration=((performance.now()-start)/1000).toFixed(2);if(data&&data.status==="ok"){status.textContent=type==="setup"?"تم إنشاء وتجهيز الصفحات بنجاح":"تم تحديث "+names[type]+" بنجاح";time.textContent=(type==="invoice"?"زمن التنفيذ والاتصال: ":"زمن التنفيذ: ")+duration+" ثانية"}else{status.textContent=data&&data.message?data.message:"حدث خطأ أثناء التحديث";time.textContent="زمن التنفيذ: "+duration+" ثانية"}}catch(e){status.textContent="حدث خطأ أثناء الاتصال";time.textContent="زمن الاتصال: "+((performance.now()-start)/1000).toFixed(2)+" ثانية"}finally{document.querySelectorAll("button").forEach(b=>b.disabled=false)}}
+</script>
+</body>
+</html>
