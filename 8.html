@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>بيانات الطلاب والمعلمين</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}
+body{font-family:Tahoma,Arial,sans-serif;background:linear-gradient(145deg,#10091a,#21122d 55%,#120b1d);color:#fff;font-size:14px}
+.page{width:100%;height:100vh;padding:12px;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:center;gap:12px;height:58px;flex-shrink:0}
+.btn{height:44px;min-width:150px;padding:0 22px;border:0;border-radius:7px;background:linear-gradient(135deg,#9333ea,#db2777);color:#fff;font-size:17px;font-weight:700;cursor:pointer}
+.btn:hover{background:linear-gradient(135deg,#7c3aed,#be185d)}
+.btn:active{transform:scale(.98)}
+.btn.active{background:#261532}
+.status{height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#bda9c7;flex-shrink:0}
+.table-box{width:100%;flex:1;overflow:hidden;background:#1b1025;border:1px solid #ffffff18;border-radius:6px}
+table{width:100%;border-collapse:collapse;table-layout:auto}
+th,td{border:1px solid #ffffff18;padding:9px 12px;text-align:center;white-space:nowrap;line-height:1.4}
+th{background:#261532;color:#e5d7eb;font-size:15px;font-weight:800}
+td{background:#1b1025;color:#fff;font-size:14px;font-weight:600}
+tr:nth-child(even) td{background:#21132d}
+.update{height:38px;margin-top:8px;flex-shrink:0;border:0;border-radius:6px;background:linear-gradient(135deg,#9333ea,#db2777);color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.update:hover{background:linear-gradient(135deg,#7c3aed,#be185d)}
+.update:active{transform:scale(.98)}
+.loading{opacity:.55;pointer-events:none}
+@media(max-width:700px){
+.page{padding:7px}
+.top{gap:7px;height:52px}
+.btn{min-width:120px;height:40px;padding:0 12px;font-size:15px}
+th,td{padding:7px 8px;font-size:12px}
+.update{height:34px;font-size:12px}
+}
+  </style>
+</head>
+<body>
+<div class="page">
+<div class="top">
+<button class="btn" id="studentsBtn">الطلاب</button>
+<button class="btn" id="teachersBtn">المعلمين</button>
+</div>
+<div class="status" id="status">اختر الطلاب أو المعلمين</div>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>الاسم</th>
+<th>الكود</th>
+<th>رقم الواتس اب</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<button class="update" id="updateBtn">تحديث البيانات</button>
+</div>
+<script>
+const API="https://script.google.com/macros/s/AKfycbwUJolu7izOduEcu_BQ0NWFk7EN93oXXGFX58GYwzbdr4G-jUo6Re3ZO_h4WO_roHe9/exec";
+const studentsBtn=document.getElementById("studentsBtn");
+const teachersBtn=document.getElementById("teachersBtn");
+const updateBtn=document.getElementById("updateBtn");
+const status=document.getElementById("status");
+const tbody=document.getElementById("tbody");
+let currentType="";
+let cache={students:null,teachers:null};
+function render(data){
+let html="";
+for(let i=0;i<data.length;i++){
+const item=data[i]||{};
+html+="<tr><td>"+safe(item.name)+"</td><td>"+safe(item.code)+"</td><td dir=\"ltr\">"+safe(item.whatsapp)+"</td></tr>";
+}
+tbody.innerHTML=html;
+status.textContent="عدد البيانات: "+data.length;
+}
+function getData(type,button,force=false){
+currentType=type;
+studentsBtn.classList.remove("active");
+teachersBtn.classList.remove("active");
+button.classList.add("active");
+if(cache[type]&&!force){
+render(cache[type]);
+return;
+}
+button.classList.add("loading");
+updateBtn.classList.add("loading");
+status.textContent="جاري جلب البيانات...";
+tbody.innerHTML="";
+const callback="callback_"+Date.now();
+window[callback]=function(result){
+try{
+const data=result&&Array.isArray(result.data)?result.data:[];
+cache[type]=data;
+render(data);
+}catch(e){
+status.textContent="تعذر جلب البيانات";
+}
+button.classList.remove("loading");
+updateBtn.classList.remove("loading");
+delete window[callback];
+const old=document.getElementById(callback);
+if(old)old.remove();
+};
+const script=document.createElement("script");
+script.id=callback;
+script.src=API+"?type="+type+"&callback="+callback+"&t="+Date.now();
+script.onerror=function(){
+status.textContent="تعذر الاتصال بالخادم";
+button.classList.remove("loading");
+updateBtn.classList.remove("loading");
+delete window[callback];
+script.remove();
+};
+document.body.appendChild(script);
+}
+function safe(value){
+return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+studentsBtn.onclick=()=>getData("students",studentsBtn);
+teachersBtn.onclick=()=>getData("teachers",teachersBtn);
+updateBtn.onclick=()=>{
+if(currentType){
+const button=currentType==="students"?studentsBtn:teachersBtn;
+getData(currentType,button,true);
+}
+};
+</script>
+</body>
+</html>
