@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#071019">
+<title>فواتير المعلمين</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:Arial,sans-serif;background:#071019;color:#fff;user-select:none}
+body{padding:8px 0}
+.container{width:min(900px,94%);margin:auto}
+.title{text-align:center;font-size:24px;font-weight:bold;margin:5px 0 14px}
+.invoice{background:#101c27;border:1px solid #263746;border-radius:14px;padding:12px;margin-bottom:14px;box-shadow:0 5px 15px #0005}
+.head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #293b4b;padding-bottom:10px;margin-bottom:12px;gap:8px}
+.name{font-size:20px;font-weight:bold}
+.invoiceNo{font-size:12px;color:#8fa4b7}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.box{background:#0a141d;border-radius:10px;padding:9px 10px}
+.label{font-size:10px;color:#8297aa;margin-bottom:3px}
+.value{font-size:14px;font-weight:bold}
+.tableTitle{font-size:11px;color:#8297aa;margin:6px 0}
+.tableWrap{margin-top:5px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:7px 6px;text-align:center;border:1px solid #293b4b}
+th{background:#172735;font-size:13px}
+td{background:#0b151e;font-size:14px;font-weight:bold}
+.total{background:#123426;border:1px solid #1d8f62;border-radius:10px;padding:9px 12px;margin-top:9px;display:flex;justify-content:space-between;align-items:center}
+.totalLabel{font-size:12px;color:#a9c8ba}
+.totalValue{font-size:18px;font-weight:bold;color:#5ee6a9}
+.status{display:inline-block;background:#482020;color:#ff9b9b;padding:5px 12px;border-radius:18px;font-size:13px;font-weight:bold;margin-top:9px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.pay,.send{width:100%;border:0;border-radius:10px;padding:10px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer}
+.pay{background:#1d8f62}
+.send{background:#176b45}
+.pay:disabled,.send:disabled{opacity:.55;cursor:not-allowed}
+.loading,.empty{background:#101c27;border-radius:14px;text-align:center;padding:35px 12px;color:#8fa4b7}
+.toast{position:fixed;top:15px;left:50%;transform:translateX(-50%) translateY(-130px);width:min(90%,500px);padding:13px 16px;border-radius:12px;text-align:center;font-size:14px;font-weight:bold;z-index:1000;transition:.3s;box-shadow:0 8px 25px #0006}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:#124b34;border:1px solid #1d8f62;color:#72edb2}
+.toast.error{background:#4a2020;border:1px solid #8f3535;color:#ffaaaa}
+.overlay{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:900}
+.confirm{width:min(430px,100%);background:#101c27;border:1px solid #33495b;border-radius:16px;padding:20px;text-align:center}
+.confirm h2{margin:0 0 10px}
+.confirm p{color:#aebdca;line-height:1.6}
+.confirmBtns{display:flex;gap:8px;margin-top:15px}
+.confirmBtns button{flex:1;border:0;border-radius:9px;padding:11px;font-size:15px;cursor:pointer}
+.confirmPay{background:#1d8f62;color:#fff}
+.confirmPay:disabled{opacity:.55}
+.cancel{background:#263746;color:#fff}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="container">
+<div class="title">فواتير المعلمين</div>
+<div id="content"><div class="loading">جاري جلب الفواتير...</div></div>
+</div>
+<div class="overlay" id="overlay">
+<div class="confirm">
+<h2>تأكيد الدفع</h2>
+<p>هل أنت متأكد من إتمام دفع هذه الفاتورة؟<br>سيتم تغيير الحالة إلى تم الدفع.</p>
+<div class="confirmBtns">
+<button class="cancel" onclick="closeConfirm()">إلغاء</button>
+<button class="confirmPay" id="confirmPay">تأكيد الدفع</button>
+</div>
+</div>
+</div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbzjjwfB5Vb_RED0xsXXYk31-2z3jO19MJER9YiMih8uGYXaghEkGpdBQLmyAh9JNKKm/exec';
+let invoices=[],selected=null,toastTimer=null;
+function showToast(message,type='success'){
+const toast=document.getElementById('toast');
+clearTimeout(toastTimer);
+toast.className='toast '+type+' show';
+toast.textContent=message;
+toastTimer=setTimeout(()=>toast.className='toast '+type,3500);
+}
+function api(params){
+return new Promise((resolve,reject)=>{
+const callback='cb_'+Date.now()+'_'+Math.floor(Math.random()*999999);
+const script=document.createElement('script');
+let finished=false;
+params.callback=callback;
+params._t=Date.now();
+const timeout=setTimeout(()=>{
+if(finished)return;
+finished=true;
+delete window[callback];
+script.remove();
+reject(new Error('تعذر الاتصال بالخادم'));
+},15000);
+window[callback]=data=>{
+if(finished)return;
+finished=true;
+clearTimeout(timeout);
+delete window[callback];
+script.remove();
+resolve(data);
+};
+script.onerror=()=>{
+if(finished)return;
+finished=true;
+clearTimeout(timeout);
+delete window[callback];
+script.remove();
+reject(new Error('تعذر الاتصال بالخادم'));
+};
+const sep=API_URL.includes('?')?'&':'?';
+script.src=API_URL+sep+new URLSearchParams(params).toString();
+document.body.appendChild(script);
+});
+}
+async function loadInvoices(showLoading=true){
+const content=document.getElementById('content');
+if(showLoading)content.innerHTML='<div class="loading">جاري جلب الفواتير...</div>';
+try{
+const res=await api({action:'list'});
+if(!res||!res.ok)throw new Error(res&&res.error?res.error:'حدث خطأ في جلب البيانات');
+invoices=res.data||[];
+render();
+}catch(e){
+content.innerHTML='<div class="empty">تعذر جلب الفواتير</div>';
+showToast(e.message||'تعذر الاتصال بالخادم','error');
+}
+}
+function parseDetails(details){
+const text=String(details||'');
+const main=text.replace(/^\(/,'').split(')')[0]||'';
+const p=main.split('-');
+const second=text.match(/\((\d+)\s*حصص\s*-\s*([^)]+)\)/);
+return{
+teacher:(p[0]||'').trim(),
+subject:(p[3]||'').trim(),
+price:(p[4]||'').trim(),
+count:second?second[1].trim():''
+};
+}
+function render(){
+const content=document.getElementById('content');
+if(!invoices.length){
+content.innerHTML='<div class="empty">لا توجد فواتير غير مدفوعة</div>';
+return;
+}
+content.innerHTML=invoices.map((x,i)=>{
+const parsed=parseDetails(x.raw.d);
+return `
+<div class="invoice">
+<div class="head">
+<div class="name">${escapeHtml(parsed.teacher)}</div>
+<div class="invoiceNo">رقم الصف: ${x.row}</div>
+</div>
+<div class="info">
+<div class="box"><div class="label">اسم الطالب</div><div class="value">${escapeHtml(x.student)}</div></div>
+<div class="box"><div class="label">الكود</div><div class="value">${escapeHtml(x.code)}</div></div>
+<div class="box"><div class="label">المادة</div><div class="value">${escapeHtml(parsed.subject)}</div></div>
+<div class="box"><div class="label">عدد الحصص</div><div class="value">${escapeHtml(parsed.count)} حصص</div></div>
+</div>
+<div class="tableTitle">بيانات الحصص</div>
+<div class="tableWrap">
+<table>
+<thead><tr><th>الحصة</th><th>التاريخ</th><th>الحصة</th><th>التاريخ</th></tr></thead>
+<tbody>${buildSessions(x.raw.e)}</tbody>
+</table>
+</div>
+<div class="total"><div class="totalLabel">إجمالي السعر</div><div class="totalValue">${escapeHtml(parsed.price)}</div></div>
+<div><span class="status">${escapeHtml(x.status)}</span></div>
+<div class="buttons">
+<button class="send" onclick="sendInvoice(${i})">إرسال الفاتورة</button>
+<button class="pay" onclick="openConfirm(${i})">تم الدفع</button>
+</div>
+</div>`;
+}).join('');
+}
+function buildSessions(text){
+const matches=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/g)||[];
+let html='';
+for(let i=0;i<matches.length;i+=2){
+const a=parseSession(matches[i]);
+const b=matches[i+1]?parseSession(matches[i+1]):null;
+html+='<tr><td>'+escapeHtml(a.lesson)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+(b?escapeHtml(b.lesson):'')+'</td><td>'+(b?escapeHtml(b.date):'')+'</td></tr>';
+}
+return html||'<tr><td colspan="4">لا توجد بيانات</td></tr>';
+}
+function parseSession(text){
+const m=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/);
+if(!m)return{lesson:'',date:''};
+return{lesson:m[1].trim(),date:m[3]+'/'+m[2]};
+}
+function sendInvoice(i){
+const x=invoices[i];
+const parsed=parseDetails(x.raw.d);
+const phone=String(x.raw.c||'').trim();
+if(!phone){
+showToast('رقم الواتساب غير موجود','error');
+return;
+}
+const message='فاتورة المعلم\n\nاسم المعلم: '+parsed.teacher+'\nاسم الطالب: '+x.student+'\nالكود: '+x.code+'\nالمادة: '+parsed.subject+'\nعدد الحصص: '+parsed.count+' حصص\nإجمالي السعر: '+parsed.price+'\n\nحالة الفاتورة: '+x.status;
+window.location.href='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
+}
+function openConfirm(i){
+selected=invoices[i];
+document.getElementById('overlay').style.display='flex';
+}
+function closeConfirm(){
+selected=null;
+document.getElementById('overlay').style.display='none';
+}
+document.getElementById('confirmPay').onclick=async()=>{
+if(!selected)return;
+const btn=document.getElementById('confirmPay');
+const row=selected.row;
+btn.disabled=true;
+btn.textContent='جاري التحديث...';
+try{
+const res=await api({action:'pay',row:row});
+if(!res||!res.ok)throw new Error(res&&res.error?res.error:'تعذر تحديث الفاتورة');
+closeConfirm();
+showToast('تم الدفع بنجاح','success');
+await loadInvoices(false);
+}catch(e){
+showToast(e.message||'تعذر الاتصال بالخادم','error');
+}finally{
+btn.disabled=false;
+btn.textContent='تأكيد الدفع';
+}
+};
+function escapeHtml(v){
+return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+loadInvoices();
+</script>
+</body>
+</html>
