@@ -18,18 +18,19 @@ h1{font-size:25px;margin:0 0 9px;color:#fff;text-shadow:0 0 15px #d879ff70}
 .panel-title h2{font-size:16px;color:#f2d5ff;margin:0}
 .count{font-size:12px;color:#bdf7e8;background:#00c7a219;border:1px solid #00c7a24d;padding:7px 10px;border-radius:20px}
 .table-wrap{width:100%;overflow-x:auto;border-radius:12px;border:1px solid #394454}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th{padding:13px 9px;background:linear-gradient(100deg,#382342,#292044);color:#f6dcff;font-size:13px;text-align:center;border-bottom:1px solid #6d4a83}
-td{padding:12px 9px;text-align:center;border-bottom:1px solid #ffffff10;color:#f5f1ff;font-size:13px;overflow-wrap:anywhere;line-height:1.8}
+table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:380px}
+th{padding:13px 7px;background:linear-gradient(100deg,#382342,#292044);color:#f6dcff;font-size:13px;text-align:center;border-bottom:1px solid #6d4a83}
+td{padding:12px 7px;text-align:center;border-bottom:1px solid #ffffff10;color:#f5f1ff;font-size:13px;overflow-wrap:anywhere;line-height:1.8}
 tr:last-child td{border-bottom:0}
 tbody tr{background:#0c1924}
 tbody tr:nth-child(even){background:#10202c}
 tbody tr:hover{background:#1b2435}
 .points-cell{color:#f2d7ff;font-weight:bold;text-shadow:0 0 10px #b764e52b}
-.price-input{width:100%;min-width:70px;padding:10px 8px;text-align:center;background:#071019;border:1px solid #58416c;border-radius:9px;color:#fff;font-size:14px;font-weight:bold;outline:none}
-.price-input:focus{border-color:#e06dce;box-shadow:0 0 0 3px #d45bd21c}
-.price-input.changed{border-color:#00c7a2;box-shadow:0 0 0 2px #00c7a218}
-.price-input:disabled{opacity:.65}
+.price-input,.type-select{width:100%;min-width:65px;padding:10px 5px;text-align:center;background:#071019;border:1px solid #58416c;border-radius:9px;color:#fff;font-size:14px;font-weight:bold;outline:none}
+.price-input:focus,.type-select:focus{border-color:#e06dce;box-shadow:0 0 0 3px #d45bd21c}
+.price-input.changed,.type-select.changed{border-color:#00c7a2;box-shadow:0 0 0 2px #00c7a218}
+.type-select option{background:#10202c;color:#fff}
+.price-input:disabled,.type-select:disabled{opacity:.65}
 .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 button{font-family:inherit;border:0;border-radius:11px;padding:13px 16px;font-size:14px;font-weight:bold;cursor:pointer;transition:transform .15s,opacity .2s}
 button:active{transform:scale(.98)}
@@ -43,7 +44,7 @@ button:disabled{opacity:.55;cursor:wait}
 .banner.loading{color:#ead7ff;background:#251d3c;border:1px solid #7551a5}
 .empty{text-align:center;color:#c4b8d8;padding:30px 12px}
 .footer{text-align:center;color:#9e9ab7;font-size:11px;padding:8px 0 18px}
-@media(max-width:480px){body{padding:10px}.header{padding:10px 8px 19px}.logo{width:56px;height:56px;font-size:26px}h1{font-size:22px}.panel{padding:11px;border-radius:15px}.panel-title h2{font-size:14px}th{font-size:12px;padding:11px 5px}td{font-size:12px;padding:10px 5px}.price-input{font-size:13px;padding:10px 3px;min-width:55px}.actions{gap:8px}.actions button{width:100%}}
+@media(max-width:480px){body{padding:10px}.header{padding:10px 8px 19px}.logo{width:56px;height:56px;font-size:26px}h1{font-size:22px}.panel{padding:9px;border-radius:15px}.panel-title h2{font-size:14px}th{font-size:11px;padding:11px 4px}td{font-size:12px;padding:9px 4px}.price-input,.type-select{font-size:12px;padding:10px 2px;min-width:58px}.actions{gap:8px}.actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -63,12 +64,13 @@ button:disabled{opacity:.55;cursor:wait}
 <table>
 <thead>
 <tr>
-<th style="width:60%">التقييمات الثمانية</th>
-<th style="width:40%">السعر</th>
+<th style="width:42%">التقييم</th>
+<th style="width:28%">السعر</th>
+<th style="width:30%">النوع</th>
 </tr>
 </thead>
 <tbody id="tableBody">
-<tr><td colspan="2" class="empty">جاري تحميل البيانات...</td></tr>
+<tr><td colspan="3" class="empty">جاري تحميل البيانات...</td></tr>
 </tbody>
 </table>
 </div>
@@ -81,51 +83,54 @@ button:disabled{opacity:.55;cursor:wait}
 </div>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwNVJwISviw_oBPH-cMiyEgtrf0h9nmjPUixpUL4nVwyqKYhdwnthec2_OcSjMVndPi/exec";
+const FIRST_ROW=2;
+const ITEMS_COUNT=8;
+const TYPES=["مكافأة","خصم"];
 const $=id=>document.getElementById(id);
 let items=[];
 let originalPrices={};
 let loading=false;
-function banner(message,type="loading"){
-$("banner").textContent=message;
-$("banner").className="banner show "+type;
-}
-function clearBanner(){
-$("banner").textContent="";
-$("banner").className="banner";
-}
+function banner(message,type="loading"){$("banner").textContent=message;$("banner").className="banner show "+type;}
+function clearBanner(){$("banner").textContent="";$("banner").className="banner";}
+function parsePrice(value){const match=String(value??"").trim().match(/^(.+?)\s+(مكافأة|خصم)$/);return match?{price:match[1].trim(),type:match[2]}:{price:String(value??"").trim(),type:""};}
+function makeSavedValue(price,type){return price.trim()+" "+type;}
 function renderTable(){
 const body=$("tableBody");
 body.replaceChildren();
 $("count").textContent=items.length+" تقييم";
-if(!items.length){
-const tr=document.createElement("tr");
-const td=document.createElement("td");
-td.colSpan=2;
-td.className="empty";
-td.textContent="لا توجد تقييمات مسجلة في العمود BK.";
-tr.appendChild(td);
-body.appendChild(tr);
-return;
-}
+if(items.length!==ITEMS_COUNT){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=3;td.className="empty";td.textContent="يجب وجود 8 تقييمات من الصف الثاني إلى الصف التاسع.";tr.appendChild(td);body.appendChild(tr);return;}
 items.forEach(item=>{
 const tr=document.createElement("tr");
 const pointsCell=document.createElement("td");
 pointsCell.className="points-cell";
 pointsCell.textContent=String(item.points??"");
+const parsed=parsePrice(item.price);
 const priceCell=document.createElement("td");
-const input=document.createElement("input");
-input.className="price-input";
-input.type="text";
-input.inputMode="text";
-input.maxLength=50;
-input.value=String(item.price??"");
-input.dataset.row=String(item.row);
-input.setAttribute("aria-label","سعر التقييم "+item.points);
-input.addEventListener("input",()=>{
-input.classList.toggle("changed",input.value!==String(originalPrices[input.dataset.row]??""));
-});
-priceCell.appendChild(input);
-tr.append(pointsCell,priceCell);
+const priceInput=document.createElement("input");
+priceInput.className="price-input";
+priceInput.type="text";
+priceInput.inputMode="decimal";
+priceInput.maxLength=45;
+priceInput.value=parsed.price;
+priceInput.dataset.row=String(item.row);
+priceInput.setAttribute("aria-label","سعر التقييم "+item.points);
+const typeCell=document.createElement("td");
+const typeSelect=document.createElement("select");
+typeSelect.className="type-select";
+typeSelect.dataset.row=String(item.row);
+typeSelect.setAttribute("aria-label","نوع السعر "+item.points);
+const placeholder=document.createElement("option");
+placeholder.value="";
+placeholder.textContent="اختر النوع";
+typeSelect.appendChild(placeholder);
+TYPES.forEach(type=>{const option=document.createElement("option");option.value=type;option.textContent=type;typeSelect.appendChild(option);});
+typeSelect.value=parsed.type;
+function updateChanged(){const original=parsePrice(originalPrices[item.row]??"");priceInput.classList.toggle("changed",priceInput.value.trim()!==original.price);typeSelect.classList.toggle("changed",typeSelect.value!==original.type);}
+priceInput.addEventListener("input",updateChanged);
+typeSelect.addEventListener("change",updateChanged);
+priceCell.appendChild(priceInput);
+typeCell.appendChild(typeSelect);
+tr.append(pointsCell,priceCell,typeCell);
 body.appendChild(tr);
 });
 }
@@ -136,26 +141,20 @@ $("refreshBtn").disabled=true;
 $("saveBtn").disabled=true;
 banner("جاري تحميل بيانات النقاط...","loading");
 try{
-if(!API_URL.startsWith("https://script.google.com/"))throw new Error("ضع رابط نشر Apps Script الصحيح داخل API_URL أولًا.");
 const response=await fetch(API_URL+"?action=getPoints&_="+Date.now(),{cache:"no-store"});
 const data=await response.json();
 if(!data.success)throw new Error(data.message||"تعذر جلب البيانات");
 items=Array.isArray(data.items)?data.items:[];
+if(items.length!==ITEMS_COUNT||items.some((item,i)=>Number(item.row)!==FIRST_ROW+i||!String(item.points??"").trim()))throw new Error("يجب وجود 8 تقييمات صحيحة من الصف الثاني إلى الصف التاسع.");
 originalPrices={};
 items.forEach(item=>originalPrices[item.row]=String(item.price??""));
 renderTable();
 banner("تم تحميل البيانات بنجاح.","success");
-setTimeout(()=>{if($("banner").classList.contains("success"))clearBanner()},2200);
+setTimeout(()=>{if($("banner").classList.contains("success"))clearBanner();},2200);
 }catch(error){
+items=[];
+renderTable();
 banner(error.message||"تعذر الاتصال بالخادم.","error");
-$("tableBody").replaceChildren();
-const tr=document.createElement("tr");
-const td=document.createElement("td");
-td.colSpan=2;
-td.className="empty";
-td.textContent="تعذر تحميل البيانات. تحقق من رابط النشر وصلاحيات الوصول.";
-tr.appendChild(td);
-$("tableBody").appendChild(tr);
 }finally{
 loading=false;
 $("refreshBtn").disabled=false;
@@ -164,53 +163,43 @@ $("saveBtn").disabled=false;
 }
 async function saveChanges(){
 if(loading)return;
-const inputs=Array.from(document.querySelectorAll(".price-input"));
-const changes=inputs.map(input=>({
-row:Number(input.dataset.row),
-price:input.value.trim(),
-points:items.find(item=>item.row===Number(input.dataset.row))?.points,
-original:String(originalPrices[input.dataset.row]??"")
-})).filter(item=>item.price!==item.original);
-if(!changes.length){
-banner("لا توجد تعديلات جديدة لإرسالها.","loading");
-return;
+if(items.length!==ITEMS_COUNT){banner("حدّث البيانات وتأكد من وجود التقييمات الثمانية.","error");return;}
+const rows=Array.from(document.querySelectorAll("#tableBody tr"));
+if(rows.length!==ITEMS_COUNT){banner("عدد التقييمات غير صحيح.","error");return;}
+const payloadItems=[];
+for(let i=0;i<ITEMS_COUNT;i++){
+const item=items[i];
+const row=FIRST_ROW+i;
+const priceInput=rows[i].querySelector(".price-input");
+const typeSelect=rows[i].querySelector(".type-select");
+const price=priceInput.value.trim();
+const type=typeSelect.value;
+if(Number(item.row)!==row||!String(item.points??"").trim()){banner("بيانات التقييمات غير صحيحة. حدّث البيانات.","error");return;}
+if(!price||price.length>45||/^[=+\-@]/.test(price)||/[\r\n]/.test(price)){banner("أدخل سعرًا صحيحًا في الصف "+row+".","error");priceInput.focus();return;}
+if(!TYPES.includes(type)){banner("اختر مكافأة أو خصم في الصف "+row+".","error");typeSelect.focus();return;}
+payloadItems.push({row:row,points:String(item.points).trim(),price:makeSavedValue(price,type)});
 }
-for(const item of changes){
-if(!Number.isInteger(item.row)||item.row<2||!item.points||item.price.length>50){
-banner("تأكد من صحة السعر في الصف الذي عدّلته فقط.","error");
-return;
-}
-}
+const changes=payloadItems.filter(item=>item.price!==String(originalPrices[item.row]??"").trim());
+if(!changes.length){banner("لا توجد تعديلات جديدة لإرسالها.","loading");return;}
 loading=true;
 $("saveBtn").disabled=true;
 $("refreshBtn").disabled=true;
-inputs.forEach(input=>input.disabled=true);
-let saved=0;
+document.querySelectorAll(".price-input,.type-select").forEach(input=>input.disabled=true);
+banner("جاري إرسال الأسعار والأنواع الثمانية في طلب واحد...","loading");
 try{
-for(const change of changes){
-banner("جاري حفظ التعديلات... "+(saved+1)+" من "+changes.length,"loading");
-const response=await fetch(API_URL,{
-method:"POST",
-headers:{"Content-Type":"text/plain;charset=utf-8"},
-body:JSON.stringify({action:"updatePrice",row:change.row,points:change.points,price:change.price})
-});
+const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"updatePrices",items:payloadItems})});
 const data=await response.json();
-if(!data.success)throw new Error((data.message||"تعذر تحديث السعر")+" — الصف "+change.row);
-originalPrices[change.row]=change.price;
-const item=items.find(x=>x.row===change.row);
-if(item)item.price=change.price;
-saved++;
-}
+if(!data.success)throw new Error(data.message||"تعذر تحديث الأسعار");
+payloadItems.forEach(item=>{originalPrices[item.row]=item.price;const current=items.find(x=>Number(x.row)===item.row);if(current)current.price=item.price;});
 renderTable();
-banner("تم حفظ "+saved+" سعر بنجاح.","success");
+banner("تم حفظ الأسعار والأنواع الثمانية بنجاح.","success");
 }catch(error){
-renderTable();
-banner("تم حفظ "+saved+" من "+changes.length+" تعديل. "+(error.message||"تعذر إكمال الحفظ.")+" راجع الأسعار وحاول مجددًا.","error");
+banner((error.message||"تعذر الاتصال بالخادم.")+" حدّث البيانات للتحقق من الحفظ قبل إعادة المحاولة.","error");
 }finally{
 loading=false;
 $("saveBtn").disabled=false;
 $("refreshBtn").disabled=false;
-document.querySelectorAll(".price-input").forEach(input=>input.disabled=false);
+document.querySelectorAll(".price-input,.type-select").forEach(input=>input.disabled=false);
 }
 }
 $("saveBtn").addEventListener("click",saveChanges);
