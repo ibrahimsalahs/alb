@@ -1,31 +1,36 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
-<head>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>لوحة التحديث</title>
+<meta name="theme-color" content="#160b24">
+<meta name="description" content="EduSpace Management - لوحة تحديث النظام">
+<title>لوحة التحديث | EduSpace Management</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(145deg,#10091a,#21122d 55%,#120b1d);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}.box{width:100%;max-width:460px;background:#1b1025;border:1px solid #ffffff0d;border-radius:24px;padding:30px;box-shadow:0 12px 35px #00000045;text-align:center}.icon{width:72px;height:72px;margin:0 auto 18px;border-radius:20px;background:#d946ef18;display:flex;align-items:center;justify-content:center;font-size:32px}.title{font-size:24px;font-weight:700;color:#fff;margin-bottom:10px}.desc{font-size:15px;color:#bda9c7;line-height:1.7;margin-bottom:25px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}button{width:100%;border:0;border-radius:14px;padding:15px;background:linear-gradient(135deg,#9333ea,#db2777);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}button:hover{background:linear-gradient(135deg,#7c3aed,#be185d)}button:disabled{opacity:.6;cursor:not-allowed}.status{margin-top:20px;min-height:24px;font-size:15px;font-weight:600;color:#e5d7eb}.time{margin-top:8px;min-height:20px;font-size:14px;color:#bda9c7}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Arial,sans-serif}body{min-height:100vh;background:#10091a;color:#fff;overflow-x:hidden;display:flex;align-items:center;justify-content:center;padding:20px}.bg{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 90% 5%,#a855f744 0,transparent 28%),radial-gradient(circle at 5% 80%,#e11d482d 0,transparent 30%),linear-gradient(145deg,#10091a,#21122d 55%,#120b1d)}.orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:.35;z-index:-2}.orb1{width:180px;height:180px;background:#a855f7;top:-80px;right:-50px}.orb2{width:160px;height:160px;background:#e11d48;bottom:30px;left:-70px}.box{position:relative;width:100%;max-width:460px;background:linear-gradient(145deg,#261532,#180d24);border:1px solid #ffffff12;border-radius:28px;padding:28px 22px;box-shadow:0 20px 45px #00000045;text-align:center;overflow:hidden}.box:before{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:#a855f7;filter:blur(80px);opacity:.2;top:-70px;right:-50px;pointer-events:none}.icon{position:relative;width:72px;height:72px;margin:0 auto 18px;border-radius:22px;background:linear-gradient(145deg,#9333ea,#db2777);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 25px #0004}.title{position:relative;font-size:24px;font-weight:700;color:#fff;margin-bottom:10px}.desc{position:relative;font-size:13px;color:#c7b5d0;line-height:1.8;margin-bottom:25px}.buttons{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px}button{width:100%;border:1px solid #ffffff12;border-radius:15px;padding:15px 8px;background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s;box-shadow:0 8px 20px #7c3aed20}button:nth-child(2n){background:linear-gradient(135deg,#9f1239,#e11d48);box-shadow:0 8px 20px #e11d4820}button:hover{transform:translateY(-2px);box-shadow:0 10px 25px #7c3aed40}button:nth-child(2n):hover{box-shadow:0 10px 25px #e11d4840}button:active{transform:scale(.97)}button:disabled{opacity:.55;cursor:not-allowed;transform:none}.status{position:relative;margin-top:22px;min-height:24px;font-size:14px;font-weight:700;color:#e879f9;line-height:1.7}.time{position:relative;margin-top:8px;min-height:20px;font-size:12px;color:#c4a5d0;line-height:1.7}@media(max-width:350px){body{padding:12px}.box{padding:23px 15px}.title{font-size:21px}.buttons{gap:8px}button{font-size:11px;padding:14px 5px}}
 </style>
 </head>
 <body>
-<div class="box">
+<div class="bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<main class="box">
 <div class="icon">⚙️</div>
 <div class="title">لوحة تحديث النظام</div>
-<div class="desc">اختر العملية التي تريد تنفيذها.</div>
+<div class="desc">تحكم في تحديث وتجهيز بيانات المنصة من مكان واحد.</div>
 <div class="buttons">
-<button onclick="run('setup',this)">📋 إعداد الصفحات</button>
-<button onclick="run('subscriptions',this)">🔄 تحديث الاشتراكات</button>
-<button onclick="run('results',this)">📊 تحديث النتائج</button>
-<button onclick="run('invoice',this)">🧾 تحديث الفاتورة</button>
-<button onclick="run('courses',this)">📚 تحديث الكورسات</button>
+<button onclick="run('setup')">📋 إعداد الصفحات</button>
+<button onclick="run('subscriptions')">🔄 تحديث الاشتراكات</button>
+<button onclick="run('results')">📊 تحديث النتائج</button>
+<button onclick="run('invoice')">🧾 تحديث الفاتورة</button>
+<button onclick="run('courses')">📚 تحديث الكورسات</button>
+<button onclick="run('points')">⭐ تحديث النقاط</button>
 </div>
 <div class="status" id="status"></div>
 <div class="time" id="time"></div>
-</div>
+</main>
 <script>
-const URLS={setup:"https://script.google.com/macros/s/AKfycbyIRH51PdeGyQuBStX06wW4PV1H4yeXntS6HzE0oWA0cuStRrm_MWYwzIeqM8e_5N02/exec",subscriptions:"https://script.google.com/macros/s/AKfycbz0UJBLOOyiHOBe8KVCw2HEsXZeI3tPrD93ZuAApjb1ZS6tBIY5IdAYbrTcQok7PjRI/exec",results:"https://script.google.com/macros/s/AKfycbzqU2FCTIekvgcm-BXhCeEolg-Vj4j2lDlxnGs8SS6hxxy0v2rserZVu7kgh2n87nJS2Q/exec",invoice:"https://script.google.com/macros/s/AKfycbxdUNrNaH1AOIFf9yrrzJiHYuxTDQ3vAzDxKhHzsv-8KyoNIOAvZoZMIHwjAZCWvEpXOA/exec",courses:"https://script.google.com/macros/s/AKfycby5ZqezZO_4B5MgS9DuWNZcEowHRy-xjmGiyljo1l6qBVWXWd7MBmBcEbnz7jPUqxR0IQ/exec"};
+const URLS={setup:"https://script.google.com/macros/s/AKfycbyIRH51PdeGyQuBStX06wW4PV1H4yeXntS6HzE0oWA0cuStRrm_MWYwzIeqM8e_5N02/exec",subscriptions:"https://script.google.com/macros/s/AKfycbz0UJBLOOyiHOBe8KVCw2HEsXZeI3tPrD93ZuAApjb1ZS6tBIY5IdAYbrTcQok7PjRI/exec",results:"https://script.google.com/macros/s/AKfycbzqU2FCTIekvgcm-BXhCeEolg-Vj4j2lDlxnGs8SS6hxxy0v2rserZVu7kgh2n87nJS2Q/exec",invoice:"https://script.google.com/macros/s/AKfycbxdUNrNaH1AOIFf9yrrzJiHYuxTDQ3vAzDxKhHzsv-8KyoNIOAvZoZMIHwjAZCWvEpXOA/exec",courses:"https://script.google.com/macros/s/AKfycby5ZqezZO_4B5MgS9DuWNZcEowHRy-xjmGiyljo1l6qBVWXWd7MBmBcEbnz7jPUqxR0IQ/exec",points:"https://script.google.com/macros/s/AKfycbw_EaAEkYp0wlKFUISuZMTOce5wfaD4voWA3CqSQzU0ADatSbrTDmucBqQ9t_bBKhuB/exec"};
 const status=document.getElementById("status"),time=document.getElementById("time");
-async function run(type,btn){document.querySelectorAll("button").forEach(b=>b.disabled=true);const names={setup:"الصفحات",subscriptions:"الاشتراكات",results:"النتائج",invoice:"الفاتورة",courses:"الكورسات"};status.textContent=type==="setup"?"جاري إنشاء الصفحات...":"جاري تحديث "+names[type]+"...";time.textContent="";const start=performance.now();try{const action=type==="invoice"?"invoice":type==="setup"?"setup":"update";const r=await fetch(URLS[type]+"?action="+action+"&t="+Date.now(),{method:"GET",cache:"no-store"});const t=await r.text();let data;try{data=JSON.parse(t)}catch(e){}const duration=((performance.now()-start)/1000).toFixed(2);if(data&&data.status==="ok"){status.textContent=type==="setup"?"تم إنشاء وتجهيز الصفحات بنجاح":"تم تحديث "+names[type]+" بنجاح";time.textContent=(type==="invoice"?"زمن التنفيذ والاتصال: ":"زمن التنفيذ: ")+duration+" ثانية"}else{status.textContent=data&&data.message?data.message:"حدث خطأ أثناء التحديث";time.textContent="زمن التنفيذ: "+duration+" ثانية"}}catch(e){status.textContent="حدث خطأ أثناء الاتصال";time.textContent="زمن الاتصال: "+((performance.now()-start)/1000).toFixed(2)+" ثانية"}finally{document.querySelectorAll("button").forEach(b=>b.disabled=false)}}
+async function run(type){document.querySelectorAll("button").forEach(b=>b.disabled=true);const names={setup:"الصفحات",subscriptions:"الاشتراكات",results:"النتائج",invoice:"الفاتورة",courses:"الكورسات",points:"النقاط"};status.textContent=type==="setup"?"جاري إنشاء الصفحات...":"جاري تحديث "+names[type]+"...";time.textContent="";const start=performance.now();try{const action=type==="invoice"?"invoice":type==="setup"?"setup":"update";const r=await fetch(URLS[type]+"?action="+action+"&t="+Date.now(),{method:"GET",cache:"no-store"});const t=await r.text();let data;try{data=JSON.parse(t)}catch(e){}const duration=((performance.now()-start)/1000).toFixed(2);if(data&&data.status==="ok"){status.textContent=type==="setup"?"تم إنشاء وتجهيز الصفحات بنجاح":"تم تحديث "+names[type]+" بنجاح";time.textContent=(type==="invoice"?"زمن التنفيذ والاتصال: ":"زمن التنفيذ: ")+duration+" ثانية"}else{status.textContent=data&&data.message?data.message:"حدث خطأ أثناء التحديث";time.textContent="زمن التنفيذ: "+duration+" ثانية"}}catch(e){status.textContent="حدث خطأ أثناء الاتصال";time.textContent="زمن الاتصال: "+((performance.now()-start)/1000).toFixed(2)+" ثانية"}finally{document.querySelectorAll("button").forEach(b=>b.disabled=false)}}
 </script>
 </body>
 </html>
