@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#071019">
 <title>فواتير المعلمين</title>
+
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:Arial,sans-serif;background:#071019;color:#fff;user-select:none}
@@ -50,184 +51,324 @@ td{background:#0b151e;font-size:14px;font-weight:bold}
 .cancel{background:#263746;color:#fff}
 </style>
 </head>
+
 <body>
+
 <div id="toast" class="toast"></div>
+
 <div class="container">
-<div class="title">فواتير المعلمين</div>
-<div id="content"><div class="loading">جاري جلب الفواتير...</div></div>
+  <div class="title">فواتير المعلمين</div>
+  <div id="content">
+    <div class="loading">جاري جلب الفواتير...</div>
+  </div>
 </div>
+
 <div class="overlay" id="overlay">
-<div class="confirm">
-<h2>تأكيد الدفع</h2>
-<p>هل أنت متأكد من إتمام دفع هذه الفاتورة؟<br>سيتم تغيير الحالة إلى تم الدفع.</p>
-<div class="confirmBtns">
-<button class="cancel" onclick="closeConfirm()">إلغاء</button>
-<button class="confirmPay" id="confirmPay">تأكيد الدفع</button>
+  <div class="confirm">
+    <h2>تأكيد الدفع</h2>
+    <p>هل أنت متأكد من إتمام دفع هذه الفاتورة؟<br>سيتم تغيير الحالة إلى تم الدفع.</p>
+    <div class="confirmBtns">
+      <button class="cancel" onclick="closeConfirm()">إلغاء</button>
+      <button class="confirmPay" id="confirmPay">تأكيد الدفع</button>
+    </div>
+  </div>
 </div>
-</div>
-</div>
+
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbzjjwfB5Vb_RED0xsXXYk31-2z3jO19MJER9YiMih8uGYXaghEkGpdBQLmyAh9JNKKm/exec';
+
 let invoices=[],selected=null,toastTimer=null;
+
 function showToast(message,type='success'){
-const toast=document.getElementById('toast');
-clearTimeout(toastTimer);
-toast.className='toast '+type+' show';
-toast.textContent=message;
-toastTimer=setTimeout(()=>toast.className='toast '+type,3500);
+  const toast=document.getElementById('toast');
+  clearTimeout(toastTimer);
+  toast.className='toast '+type+' show';
+  toast.textContent=message;
+  toastTimer=setTimeout(()=>toast.className='toast '+type,3500);
 }
+
 function api(params){
-return new Promise((resolve,reject)=>{
-const callback='cb_'+Date.now()+'_'+Math.floor(Math.random()*999999);
-const script=document.createElement('script');
-let finished=false;
-params.callback=callback;
-params._t=Date.now();
-const timeout=setTimeout(()=>{
-if(finished)return;
-finished=true;
-delete window[callback];
-script.remove();
-reject(new Error('تعذر الاتصال بالخادم'));
-},15000);
-window[callback]=data=>{
-if(finished)return;
-finished=true;
-clearTimeout(timeout);
-delete window[callback];
-script.remove();
-resolve(data);
-};
-script.onerror=()=>{
-if(finished)return;
-finished=true;
-clearTimeout(timeout);
-delete window[callback];
-script.remove();
-reject(new Error('تعذر الاتصال بالخادم'));
-};
-const sep=API_URL.includes('?')?'&':'?';
-script.src=API_URL+sep+new URLSearchParams(params).toString();
-document.body.appendChild(script);
-});
+  return new Promise((resolve,reject)=>{
+    const callback='cb_'+Date.now()+'_'+Math.floor(Math.random()*999999);
+    const script=document.createElement('script');
+    let finished=false;
+
+    params.callback=callback;
+    params._t=Date.now();
+
+    const timeout=setTimeout(()=>{
+      if(finished)return;
+      finished=true;
+      delete window[callback];
+      script.remove();
+      reject(new Error('تعذر الاتصال بالخادم'));
+    },15000);
+
+    window[callback]=data=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timeout);
+      delete window[callback];
+      script.remove();
+      resolve(data);
+    };
+
+    script.onerror=()=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timeout);
+      delete window[callback];
+      script.remove();
+      reject(new Error('تعذر الاتصال بالخادم'));
+    };
+
+    const sep=API_URL.includes('?')?'&':'?';
+    script.src=API_URL+sep+new URLSearchParams(params).toString();
+    document.body.appendChild(script);
+  });
 }
+
 async function loadInvoices(showLoading=true){
-const content=document.getElementById('content');
-if(showLoading)content.innerHTML='<div class="loading">جاري جلب الفواتير...</div>';
-try{
-const res=await api({action:'list'});
-if(!res||!res.ok)throw new Error(res&&res.error?res.error:'حدث خطأ في جلب البيانات');
-invoices=res.data||[];
-render();
-}catch(e){
-content.innerHTML='<div class="empty">تعذر جلب الفواتير</div>';
-showToast(e.message||'تعذر الاتصال بالخادم','error');
+  const content=document.getElementById('content');
+
+  if(showLoading){
+    content.innerHTML='<div class="loading">جاري جلب الفواتير...</div>';
+  }
+
+  try{
+    const res=await api({action:'list'});
+
+    if(!res||!res.ok){
+      throw new Error(res&&res.error?res.error:'حدث خطأ في جلب البيانات');
+    }
+
+    invoices=res.data||[];
+    render();
+
+  }catch(e){
+    content.innerHTML='<div class="empty">تعذر جلب الفواتير</div>';
+    showToast(e.message||'تعذر الاتصال بالخادم','error');
+  }
 }
-}
+
 function parseDetails(details){
-const text=String(details||'');
-const main=text.replace(/^\(/,'').split(')')[0]||'';
-const p=main.split('-');
-const second=text.match(/\((\d+)\s*حصص\s*-\s*([^)]+)\)/);
-return{
-teacher:(p[0]||'').trim(),
-subject:(p[3]||'').trim(),
-price:(p[4]||'').trim(),
-count:second?second[1].trim():''
-};
+  const text=String(details||'');
+  const main=text.replace(/^\(/,'').split(')')[0]||'';
+  const p=main.split('-');
+  const second=text.match(/\((\d+)\s*حصص\s*-\s*([^)]+)\)/);
+
+  return{
+    teacher:(p[0]||'').trim(),
+    subject:(p[3]||'').trim(),
+    price:(p[4]||'').trim(),
+    count:second?second[1].trim():''
+  };
 }
+
+function getStudentInfo(x){
+  const student=String(x.student||'');
+  const match=student.match(/^(.*?)\s*\((\d+)\)\s*$/);
+
+  return{
+    name:match?match[1].trim():student,
+    code:match?match[2].trim():String(x.code||'')
+  };
+}
+
+function getPoints(x){
+  const rawPoints=x.points??x.raw?.j??0;
+  const points=Number(rawPoints);
+
+  return Number.isFinite(points)?points:0;
+}
+
 function render(){
-const content=document.getElementById('content');
-if(!invoices.length){
-content.innerHTML='<div class="empty">لا توجد فواتير غير مدفوعة</div>';
-return;
+  const content=document.getElementById('content');
+
+  if(!invoices.length){
+    content.innerHTML='<div class="empty">لا توجد فواتير غير مدفوعة</div>';
+    return;
+  }
+
+  content.innerHTML=invoices.map((x,i)=>{
+    const parsed=parseDetails(x.raw.d);
+    const student=getStudentInfo(x);
+    const points=getPoints(x);
+    const pointsLabel=points<0?'الخصم':'الحوافز';
+
+    return `
+    <div class="invoice">
+
+      <div class="head">
+        <div class="name">${escapeHtml(parsed.teacher)}</div>
+        <div class="invoiceNo">رقم الصف: ${x.row}</div>
+      </div>
+
+      <div class="info">
+
+        <div class="box">
+          <div class="label">اسم الطالب</div>
+          <div class="value">${escapeHtml(student.name)}</div>
+        </div>
+
+        <div class="box">
+          <div class="label">الكود</div>
+          <div class="value">${escapeHtml(student.code)}</div>
+        </div>
+
+        <div class="box">
+          <div class="label">المادة</div>
+          <div class="value">${escapeHtml(parsed.subject)}</div>
+        </div>
+
+        <div class="box">
+          <div class="label">عدد الحصص</div>
+          <div class="value">${escapeHtml(parsed.count)} حصص</div>
+        </div>
+
+      </div>
+
+      <div class="tableTitle">بيانات الحصص</div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الحصة</th>
+              <th>التاريخ</th>
+              <th>الحصة</th>
+              <th>التاريخ</th>
+            </tr>
+          </thead>
+          <tbody>${buildSessions(x.raw.e)}</tbody>
+        </table>
+      </div>
+
+      <div class="total">
+        <div class="totalLabel">إجمالي السعر</div>
+        <div class="totalValue">${escapeHtml(parsed.price)}</div>
+      </div>
+
+      <div class="total">
+        <div class="totalLabel">${pointsLabel}</div>
+        <div class="totalValue">${escapeHtml(String(Math.abs(points)))}</div>
+      </div>
+
+      <div>
+        <span class="status">${escapeHtml(x.status)}</span>
+      </div>
+
+      <div class="buttons">
+        <button class="send" onclick="sendInvoice(${i})">إرسال الفاتورة</button>
+        <button class="pay" onclick="openConfirm(${i})">تم الدفع</button>
+      </div>
+
+    </div>`;
+  }).join('');
 }
-content.innerHTML=invoices.map((x,i)=>{
-const parsed=parseDetails(x.raw.d);
-return `
-<div class="invoice">
-<div class="head">
-<div class="name">${escapeHtml(parsed.teacher)}</div>
-<div class="invoiceNo">رقم الصف: ${x.row}</div>
-</div>
-<div class="info">
-<div class="box"><div class="label">اسم الطالب</div><div class="value">${escapeHtml(x.student)}</div></div>
-<div class="box"><div class="label">الكود</div><div class="value">${escapeHtml(x.code)}</div></div>
-<div class="box"><div class="label">المادة</div><div class="value">${escapeHtml(parsed.subject)}</div></div>
-<div class="box"><div class="label">عدد الحصص</div><div class="value">${escapeHtml(parsed.count)} حصص</div></div>
-</div>
-<div class="tableTitle">بيانات الحصص</div>
-<div class="tableWrap">
-<table>
-<thead><tr><th>الحصة</th><th>التاريخ</th><th>الحصة</th><th>التاريخ</th></tr></thead>
-<tbody>${buildSessions(x.raw.e)}</tbody>
-</table>
-</div>
-<div class="total"><div class="totalLabel">إجمالي السعر</div><div class="totalValue">${escapeHtml(parsed.price)}</div></div>
-<div><span class="status">${escapeHtml(x.status)}</span></div>
-<div class="buttons">
-<button class="send" onclick="sendInvoice(${i})">إرسال الفاتورة</button>
-<button class="pay" onclick="openConfirm(${i})">تم الدفع</button>
-</div>
-</div>`;
-}).join('');
-}
+
 function buildSessions(text){
-const matches=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/g)||[];
-let html='';
-for(let i=0;i<matches.length;i+=2){
-const a=parseSession(matches[i]);
-const b=matches[i+1]?parseSession(matches[i+1]):null;
-html+='<tr><td>'+escapeHtml(a.lesson)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+(b?escapeHtml(b.lesson):'')+'</td><td>'+(b?escapeHtml(b.date):'')+'</td></tr>';
+  const matches=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/g)||[];
+  let html='';
+
+  for(let i=0;i<matches.length;i+=2){
+    const a=parseSession(matches[i]);
+    const b=matches[i+1]?parseSession(matches[i+1]):null;
+
+    html+='<tr><td>'+escapeHtml(a.lesson)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+(b?escapeHtml(b.lesson):'')+'</td><td>'+(b?escapeHtml(b.date):'')+'</td></tr>';
+  }
+
+  return html||'<tr><td colspan="4">لا توجد بيانات</td></tr>';
 }
-return html||'<tr><td colspan="4">لا توجد بيانات</td></tr>';
-}
+
 function parseSession(text){
-const m=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/);
-if(!m)return{lesson:'',date:''};
-return{lesson:m[1].trim(),date:m[3]+'/'+m[2]};
+  const m=String(text||'').match(/\(([^/()]+)\/(\d{2})-(\d{2})\)/);
+
+  if(!m)return{lesson:'',date:''};
+
+  return{
+    lesson:m[1].trim(),
+    date:m[3]+'/'+m[2]
+  };
 }
+
 function sendInvoice(i){
-const x=invoices[i];
-const parsed=parseDetails(x.raw.d);
-const phone=String(x.raw.c||'').trim();
-if(!phone){
-showToast('رقم الواتساب غير موجود','error');
-return;
+  const x=invoices[i];
+  const parsed=parseDetails(x.raw.d);
+  const student=getStudentInfo(x);
+  const phone=String(x.raw.c||'').trim();
+
+  if(!phone){
+    showToast('رقم الواتساب غير موجود','error');
+    return;
+  }
+
+  const points=getPoints(x);
+  const pointsLabel=points<0?'الخصم':'الحوافز';
+
+  const message=
+    'فاتورة المعلم\n\n'+
+    'اسم المعلم: '+parsed.teacher+'\n'+
+    'اسم الطالب: '+student.name+'\n'+
+    'الكود: '+student.code+'\n'+
+    'المادة: '+parsed.subject+'\n'+
+    'عدد الحصص: '+parsed.count+' حصص\n'+
+    'إجمالي السعر: '+parsed.price+'\n'+
+    pointsLabel+': '+Math.abs(points)+'\n\n'+
+    'حالة الفاتورة: '+x.status;
+
+  window.location.href='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
 }
-const message='فاتورة المعلم\n\nاسم المعلم: '+parsed.teacher+'\nاسم الطالب: '+x.student+'\nالكود: '+x.code+'\nالمادة: '+parsed.subject+'\nعدد الحصص: '+parsed.count+' حصص\nإجمالي السعر: '+parsed.price+'\n\nحالة الفاتورة: '+x.status;
-window.location.href='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
-}
+
 function openConfirm(i){
-selected=invoices[i];
-document.getElementById('overlay').style.display='flex';
+  selected=invoices[i];
+  document.getElementById('overlay').style.display='flex';
 }
+
 function closeConfirm(){
-selected=null;
-document.getElementById('overlay').style.display='none';
+  selected=null;
+  document.getElementById('overlay').style.display='none';
 }
+
 document.getElementById('confirmPay').onclick=async()=>{
-if(!selected)return;
-const btn=document.getElementById('confirmPay');
-const row=selected.row;
-btn.disabled=true;
-btn.textContent='جاري التحديث...';
-try{
-const res=await api({action:'pay',row:row});
-if(!res||!res.ok)throw new Error(res&&res.error?res.error:'تعذر تحديث الفاتورة');
-closeConfirm();
-showToast('تم الدفع بنجاح','success');
-await loadInvoices(false);
-}catch(e){
-showToast(e.message||'تعذر الاتصال بالخادم','error');
-}finally{
-btn.disabled=false;
-btn.textContent='تأكيد الدفع';
-}
+  if(!selected)return;
+
+  const btn=document.getElementById('confirmPay');
+  const row=selected.row;
+
+  btn.disabled=true;
+  btn.textContent='جاري التحديث...';
+
+  try{
+    const res=await api({action:'pay',row:row});
+
+    if(!res||!res.ok){
+      throw new Error(res&&res.error?res.error:'تعذر تحديث الفاتورة');
+    }
+
+    closeConfirm();
+    showToast('تم الدفع بنجاح','success');
+    await loadInvoices(false);
+
+  }catch(e){
+    showToast(e.message||'تعذر الاتصال بالخادم','error');
+
+  }finally{
+    btn.disabled=false;
+    btn.textContent='تأكيد الدفع';
+  }
 };
+
 function escapeHtml(v){
-return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  return String(v??'').replace(/[&<>"']/g,m=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[m]));
 }
+
 loadInvoices();
 </script>
 </body>
