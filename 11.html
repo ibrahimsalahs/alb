@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#10091a">
+<title>جودة المنصة | EduSpace</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Arial,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;user-select:text}
+html,body{min-height:100%;width:100%;margin:0;padding:0}
+body{padding:9px;background:#10091a;color:#edfafa;overflow-x:hidden;min-height:100vh}
+.bg{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 90% 5%,#a855f744 0,transparent 28%),radial-gradient(circle at 5% 80%,#e11d482d 0,transparent 30%),linear-gradient(145deg,#10091a,#21122d 55%,#120b1d)}
+.orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:.35;z-index:-2;pointer-events:none}
+.orb1{width:180px;height:180px;background:#a855f7;top:-80px;right:-50px}
+.orb2{width:160px;height:160px;background:#e11d48;bottom:30px;left:-70px}
+button{font-family:inherit;cursor:pointer}
+.app{width:100%;max-width:1050px;margin:auto}
+.header{display:flex;justify-content:space-between;align-items:center;gap:8px;background:linear-gradient(145deg,#261532,#180d24);border:1px solid #ffffff12;border-radius:18px;padding:11px;margin-bottom:9px;box-shadow:0 10px 25px #00000025}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.logo{width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#008f7a,#1769aa);font-size:20px;font-weight:bold;color:#fff;box-shadow:0 5px 15px #0003}
+.title{font-size:17px;font-weight:800;color:#5ee0c7}
+.sub{font-size:10px;color:#91adb7;margin-top:4px}
+.refresh{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:0;border-radius:12px;padding:10px 11px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 7px 18px #0003;transition:.2s}
+.refresh:active{transform:scale(.95)}
+.refresh:disabled{opacity:.7}
+.status{display:none;margin-bottom:9px;padding:10px 12px;border-radius:13px;background:#102b29;border:1px solid #167a68;color:#5ee0c7;font-size:11px;line-height:1.7}
+.status.show{display:block}
+.status.error{background:#29171d;border-color:#743d48;color:#ffb4bb}
+.section-title{font-size:13px;font-weight:bold;color:#5ee0c7;margin:15px 2px 8px;display:flex;align-items:center;gap:7px}
+.section-title:before{content:"";width:4px;height:15px;border-radius:4px;background:#00c7a2}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.card{position:relative;overflow:hidden;background:linear-gradient(145deg,#261532,#180d24);border:1px solid #ffffff0d;border-radius:17px;padding:11px;min-width:0;box-shadow:0 10px 25px #00000025}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.stat-label{font-size:10px;color:#a3bdc5;line-height:1.7}
+.stat-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:10px;background:#123b3b;color:#5ee0c7;font-size:15px;flex-shrink:0}
+.stat-value{font-size:23px;font-weight:800;color:#5ee0c7;margin-top:8px;overflow-wrap:anywhere}
+.stat-foot{font-size:9px;color:#688c97;margin-top:4px;line-height:1.6}
+.charts{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+.chart-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#261532,#180d24);border:1px solid #ffffff0d;border-radius:19px;padding:12px;min-width:0;box-shadow:0 10px 25px #00000025}
+.chart-title{font-size:12px;font-weight:bold;color:#e9fafa}
+.chart-desc{font-size:10px;color:#85a7b1;line-height:1.7;margin-top:4px;margin-bottom:10px}
+.chart-wrap{position:relative;width:100%;height:220px}
+.chart-wrap.pie{height:205px;max-width:330px;margin:auto}
+.chart-note{font-size:10px;color:#779aa5;text-align:center;margin-top:7px;line-height:1.7}
+.columns{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.rows{display:grid;grid-template-columns:1fr;gap:6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px;background:#1b1025;border:1px solid #ffffff0d;border-radius:12px;min-width:0}
+.row-name{font-size:10px;color:#a8c5cc;line-height:1.7;overflow-wrap:anywhere}
+.row-value{font-size:11px;color:#5ee0c7;font-weight:bold;text-align:left;overflow-wrap:anywhere;max-width:100%;line-height:1.7}
+.rank-number{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:7px;background:#143b3d;color:#5ee0c7;font-size:10px;margin-left:5px}
+.finance-grid{display:grid;grid-template-columns:1fr;gap:7px}
+.finance-card{padding:11px;border-radius:15px;background:linear-gradient(145deg,#261532,#180d24);border:1px solid #ffffff0d;min-width:0;box-shadow:0 8px 20px #00000020}
+.finance-label{font-size:10px;color:#a3bdc5;line-height:1.7}
+.finance-value{font-size:13px;font-weight:bold;color:#5ee0c7;margin-top:7px;line-height:1.8;overflow-wrap:anywhere}
+.finance-card.expense .finance-value{color:#ffb18a}
+.footer{text-align:center;padding:17px 5px 9px;color:#587984;font-size:10px}
+.loading{opacity:.8}
+@media(min-width:540px){body{padding:15px}.header{padding:15px}.title{font-size:20px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.charts{grid-template-columns:repeat(2,minmax(0,1fr))}.columns{grid-template-columns:repeat(2,minmax(0,1fr))}.finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){body{padding:6px}.header{padding:9px;border-radius:15px}.logo{width:33px;height:33px}.title{font-size:15px}.refresh{padding:9px;font-size:10px}.stat-value{font-size:21px}.card{padding:9px}.chart-wrap{height:205px}.section-title{font-size:12px}}
+@media(min-width:700px){body{padding:20px}.app{max-width:1100px}.header{padding:18px;border-radius:23px}.stats{gap:12px}.card{padding:15px;border-radius:21px}.stat-value{font-size:28px}.stat-label{font-size:12px}.stat-icon{width:35px;height:35px;font-size:18px}.charts,.columns{gap:12px}.chart-card{padding:17px;border-radius:23px}.chart-title{font-size:14px}.chart-desc{font-size:11px}.chart-wrap{height:260px}.chart-wrap.pie{height:235px}.section-title{font-size:15px;margin-top:20px}.finance-grid{gap:10px}.finance-card{padding:15px;border-radius:19px}.finance-label{font-size:12px}.finance-value{font-size:15px}.row{padding:12px;border-radius:14px}.row-name{font-size:12px}.row-value{font-size:12px}}
+@media(min-width:1100px){.app{max-width:1400px}.stats{gap:14px}.charts{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.columns{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.finance-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.chart-wrap{height:280px}.chart-wrap.pie{height:250px}.section-title{margin-top:24px}}
+@media(min-width:1600px){.app{max-width:1550px}.stats{gap:16px}.chart-wrap{height:300px}.chart-wrap.pie{height:270px}}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="app" id="app">
+<header class="header">
+<div class="brand"><div class="logo">E</div><div><div class="title">جودة المنصة</div><div class="sub">EduSpace · الإحصائيات والتحليل</div></div></div>
+<button class="refresh" id="refreshBtn" onclick="loadStats()">⟳ تحديث البيانات</button>
+</header>
+<div class="status" id="status"></div>
+<div class="section-title">نظرة عامة</div>
+<div class="stats">
+<div class="card"><div class="stat-top"><div class="stat-label">إجمالي الطلاب</div><div class="stat-icon">♟</div></div><div class="stat-value" id="studentsCount">—</div><div class="stat-foot">الطلاب المسجلون</div></div>
+<div class="card"><div class="stat-top"><div class="stat-label">إجمالي المعلمين</div><div class="stat-icon">♙</div></div><div class="stat-value" id="teachersCount">—</div><div class="stat-foot">المعلمون المسجلون</div></div>
+<div class="card"><div class="stat-top"><div class="stat-label">الاشتراكات</div><div class="stat-icon">▤</div></div><div class="stat-value" id="subscriptionsCount">—</div><div class="stat-foot">الاشتراكات الفعلية</div></div>
+<div class="card"><div class="stat-top"><div class="stat-label">الحصص الشهرية</div><div class="stat-icon">◷</div></div><div class="stat-value" id="lessonsCount">—</div><div class="stat-foot">مواعيد الحصص المحسوبة</div></div>
+</div>
+<div class="section-title">الرسوم البيانية</div>
+<div class="charts">
+<div class="chart-card"><div class="chart-title">توزيع مجتمع المنصة</div><div class="chart-desc">نسبة الطلاب والمعلمين من إجمالي الأفراد.</div><div class="chart-wrap pie"><canvas id="peopleChart"></canvas></div><div class="chart-note" id="peopleNote">في انتظار البيانات</div></div>
+<div class="chart-card"><div class="chart-title">مقارنة الإحصائيات</div><div class="chart-desc">مقارنة أعداد الطلاب والمعلمين والاشتراكات والحصص.</div><div class="chart-wrap"><canvas id="countsChart"></canvas></div><div class="chart-note">الأعداد حسب النتائج المستلمة من السكريبت.</div></div>
+</div>
+<div class="section-title">الملخص المالي</div>
+<div class="finance-grid" id="financial"></div>
+<div class="section-title">تحليل الاشتراكات</div>
+<div class="columns">
+<div class="card"><div class="chart-title">المواد الدراسية</div><div class="chart-desc">المادة الأكثر والأقل اشتراكًا.</div><div class="rows" id="subjects"></div></div>
+<div class="card"><div class="chart-title">المعلمون</div><div class="chart-desc">الأكثر والأقل في الاشتراكات.</div><div class="rows" id="teachers"></div></div>
+<div class="card"><div class="chart-title">الطلاب</div><div class="chart-desc">الأكثر والأقل في الاشتراكات.</div><div class="rows" id="students"></div></div>
+<div class="card"><div class="chart-title">الفواتير</div><div class="chart-desc">حالة الفواتير المسجلة.</div><div class="rows" id="invoices"></div></div>
+</div>
+<div class="footer" id="lastUpdated">EduSpace · جودة المنصة</div>
+</div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbxdr-68EYoXi7rcmUpYnZPWW58GWC4__bQd3Y0zJ1YvjdBFhyHKeC7iYAmeSiwed6g/exec';
+const CACHE_KEY='eduspace_quality_stats_v3';
+let peopleChart=null,countsChart=null,isLoading=false;
+const $=id=>document.getElementById(id);
+const moneyNames=['مصروفات المعلمين','إيرادات الطلاب','مصروفات المنصة','إيرادات المنصة'];
+const summaryMap={'عدد الطلاب':'studentsCount','عدد المعلمين':'teachersCount','عدد الاشتراكات':'subscriptionsCount','عدد الحصص الشهرية':'lessonsCount'};
+function statusMessage(message,error=false){const el=$('status');el.textContent=message;el.className='status show'+(error?' error':'')}
+function clearStatus(){$('status').className='status'}
+function numberValue(value){if(typeof value==='number'&&Number.isFinite(value))return value;const match=String(value??'').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return match?Number(match[0]):0}
+function displayValue(value){return value===undefined||value===null||String(value).trim()===''?'لا توجد بيانات':String(value)}
+function normalizeData(json){
+if(json&&json.success===false)throw new Error(json.error||'حدث خطأ في Apps Script');
+const source=json?.statistics??json?.data??json?.results??json;
+const out={};
+if(Array.isArray(source)){source.forEach(item=>{if(Array.isArray(item)&&item.length>=2)out[String(item[0]).trim()]=item[1];else if(item&&item.name!==undefined)out[String(item.name).trim()]=item.result??item.value??''})}
+else if(source&&typeof source==='object'){Object.keys(source).forEach(key=>{const item=source[key];if(item&&typeof item==='object'&&!Array.isArray(item))out[item.name||key]=item.result??item.value??'';else out[key]=item})}
+if(!Object.keys(out).length)throw new Error('استجابة السكريبت غير متوافقة مع الصفحة');
+return out
+}
+function makeRow(name,value,index){const row=document.createElement('div');row.className='row';const label=document.createElement('div');label.className='row-name';if(index!==undefined){const rank=document.createElement('span');rank.className='rank-number';rank.textContent=index;label.append(rank)}label.append(document.createTextNode(name));const val=document.createElement('div');val.className='row-value';val.textContent=displayValue(value);row.append(label,val);return row}
+function renderRows(id,items){const box=$(id);box.replaceChildren();items.forEach((item,i)=>box.append(makeRow(item[0],item[1],i+1)))}
+function renderFinance(data){const box=$('financial');box.replaceChildren();moneyNames.forEach(name=>{const card=document.createElement('div');card.className='finance-card'+(name.includes('مصروفات')?' expense':'');const label=document.createElement('div');label.className='finance-label';label.textContent=name;const value=document.createElement('div');value.className='finance-value';value.textContent=displayValue(data[name]);card.append(label,value);box.append(card)});const unpaid=document.createElement('div');unpaid.className='finance-card expense';const label=document.createElement('div');label.className='finance-label';label.textContent='الفواتير غير المدفوعة';const value=document.createElement('div');value.className='finance-value';value.textContent=displayValue(data['عدد الفواتير غير المدفوعة']);unpaid.append(label,value);box.append(unpaid)}
+function createCharts(data){
+if(typeof Chart==='undefined'){$('peopleNote').textContent='تعذر تحميل مكتبة الرسوم البيانية';return}
+const students=numberValue(data['عدد الطلاب']),teachers=numberValue(data['عدد المعلمين']),subs=numberValue(data['عدد الاشتراكات']),lessons=numberValue(data['عدد الحصص الشهرية']);
+if(peopleChart)peopleChart.destroy();
+peopleChart=new Chart($('peopleChart'),{type:'doughnut',data:{labels:['الطلاب','المعلمون'],datasets:[{data:[students,teachers],backgroundColor:['#00c7a2','#1976d2'],borderColor:'#261532',borderWidth:4,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#d5e9ed',padding:15,font:{family:'Tahoma',size:11}}},tooltip:{callbacks:{label:ctx=>ctx.label+': '+Number(ctx.raw).toLocaleString('en-US')}}}}});
+const total=students+teachers;
+$('peopleNote').textContent=total?'الطلاب '+(students/total*100).toFixed(1)+'% · المعلمون '+(teachers/total*100).toFixed(1)+'%':'لا توجد بيانات كافية للرسم';
+if(countsChart)countsChart.destroy();
+countsChart=new Chart($('countsChart'),{type:'bar',data:{labels:['الطلاب','المعلمون','الاشتراكات','الحصص'],datasets:[{label:'العدد',data:[students,teachers,subs,lessons],backgroundColor:['#00c7a2','#1976d2','#27a5a5','#5ee0c7'],borderRadius:7,borderSkipped:false,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>Number(ctx.raw).toLocaleString('en-US')}}},scales:{x:{beginAtZero:true,ticks:{color:'#91adb7',precision:0},grid:{color:'#493451'}},y:{ticks:{color:'#d5e9ed',font:{family:'Tahoma',size:10}},grid:{display:false}}}}})
+}
+function renderStats(data){
+Object.entries(summaryMap).forEach(([name,id])=>$(id).textContent=numberValue(data[name]).toLocaleString('en-US'));
+renderFinance(data);
+renderRows('subjects',[['المادة الأكثر اشتراكا',data['المادة الأكثر اشتراكا']],['المادة الأقل اشتراكا',data['المادة الأقل اشتراكا']]]);
+renderRows('teachers',[['المعلم الأكثر اشتراكات',data['المعلم الأكثر اشتراكات']],['المعلم الأقل اشتراكات',data['المعلم الأقل اشتراكات']]]);
+renderRows('students',[['الطالب الأكثر اشتراكات',data['الطالب الأكثر اشتراكات']],['الطالب الأقل اشتراكات',data['الطالب الأقل اشتراكات']]]);
+renderRows('invoices',[['الفواتير غير المدفوعة',data['عدد الفواتير غير المدفوعة']]]);
+createCharts(data)
+}
+function saveData(data){try{localStorage.setItem(CACHE_KEY,JSON.stringify({data,savedAt:Date.now()}))}catch(e){}}
+function loadSavedData(){
+try{const saved=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(saved&&saved.data){renderStats(saved.data);const date=saved.savedAt?new Date(saved.savedAt).toLocaleString('ar-EG'):'غير معروف';$('lastUpdated').textContent='آخر بيانات محفوظة: '+date;return true}}catch(e){}
+return false
+}
+async function loadStats(){
+if(isLoading)return;
+isLoading=true;
+const btn=$('refreshBtn');
+btn.disabled=true;
+btn.textContent='جارٍ التحديث...';
+try{
+const response=await fetch(API_URL,{method:'GET',cache:'no-store',redirect:'follow'});
+if(!response.ok)throw new Error('استجابة الخادم: '+response.status);
+const json=await response.json();
+const data=normalizeData(json);
+renderStats(data);
+saveData(data);
+const now=new Date().toLocaleString('ar-EG');
+$('lastUpdated').textContent='آخر تحديث ناجح: '+now;
+statusMessage('تم تحديث البيانات وعرض أحدث النتائج.');
+}catch(error){
+const hasCache=loadSavedData();
+statusMessage(hasCache?'تعذر جلب بيانات جديدة؛ ما زالت آخر بيانات محفوظة معروضة.':'تعذر جلب البيانات. تحقق من نشر Apps Script وإعدادات الوصول.',true)
+}finally{
+isLoading=false;
+btn.disabled=false;
+btn.textContent='⟳ تحديث البيانات'
+}
+}
+loadSavedData();
+loadStats();
+</script>
+</body>
+</html>
