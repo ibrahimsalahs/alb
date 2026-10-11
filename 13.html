@@ -1,0 +1,221 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071019">
+<title>نظام النقاط | EduSpace</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:Arial,Tahoma,sans-serif;background:#071019;color:#f8f5ff}
+body{padding:18px;background:radial-gradient(ellipse at 10% 0%,#bd4bc526,transparent 38%),radial-gradient(ellipse at 100% 25%,#7853df24,transparent 38%),linear-gradient(145deg,#071019,#0d202b,#08141d);background-attachment:fixed}
+.container{max-width:850px;margin:auto}
+.header{text-align:center;padding:15px 8px 24px}
+.logo{width:65px;height:65px;margin:0 auto 13px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;background:linear-gradient(135deg,#ed62cf,#9656f5,#00c7a2);box-shadow:0 0 28px #b74fd94d}
+h1{font-size:25px;margin:0 0 9px;color:#fff;text-shadow:0 0 15px #d879ff70}
+.subtitle{font-size:13px;color:#c9c3df;line-height:1.8}
+.panel{background:linear-gradient(145deg,#102530f5,#101727f7);border:1px solid #bd73e33d;border-radius:19px;padding:17px;margin-bottom:16px;box-shadow:0 10px 32px #0003;overflow:hidden}
+.panel-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.panel-title h2{font-size:16px;color:#f2d5ff;margin:0}
+.count{font-size:12px;color:#bdf7e8;background:#00c7a219;border:1px solid #00c7a24d;padding:7px 10px;border-radius:20px}
+.table-wrap{width:100%;overflow-x:auto;border-radius:12px;border:1px solid #394454}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{padding:13px 9px;background:linear-gradient(100deg,#382342,#292044);color:#f6dcff;font-size:13px;text-align:center;border-bottom:1px solid #6d4a83}
+td{padding:12px 9px;text-align:center;border-bottom:1px solid #ffffff10;color:#f5f1ff;font-size:13px;overflow-wrap:anywhere;line-height:1.8}
+tr:last-child td{border-bottom:0}
+tbody tr{background:#0c1924}
+tbody tr:nth-child(even){background:#10202c}
+tbody tr:hover{background:#1b2435}
+.points-cell{color:#f2d7ff;font-weight:bold;text-shadow:0 0 10px #b764e52b}
+.price-input{width:100%;min-width:70px;padding:10px 8px;text-align:center;background:#071019;border:1px solid #58416c;border-radius:9px;color:#fff;font-size:14px;font-weight:bold;outline:none}
+.price-input:focus{border-color:#e06dce;box-shadow:0 0 0 3px #d45bd21c}
+.price-input.changed{border-color:#00c7a2;box-shadow:0 0 0 2px #00c7a218}
+.price-input:disabled{opacity:.65}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{font-family:inherit;border:0;border-radius:11px;padding:13px 16px;font-size:14px;font-weight:bold;cursor:pointer;transition:transform .15s,opacity .2s}
+button:active{transform:scale(.98)}
+button:disabled{opacity:.55;cursor:wait}
+.save-btn{flex:1;color:#fff;background:linear-gradient(110deg,#a347d1,#d650b6,#7653e8);box-shadow:0 5px 20px #a34cc42e}
+.refresh-btn{color:#d8c7ff;background:linear-gradient(110deg,#292043,#19313e);border:1px solid #654c88}
+.banner{display:none;padding:13px 15px;border-radius:11px;margin-bottom:15px;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+.banner.show{display:block}
+.banner.success{color:#b7ffe8;background:#0d332d;border:1px solid #16866a}
+.banner.error{color:#ffd4e9;background:#391b30;border:1px solid #a84979}
+.banner.loading{color:#ead7ff;background:#251d3c;border:1px solid #7551a5}
+.empty{text-align:center;color:#c4b8d8;padding:30px 12px}
+.footer{text-align:center;color:#9e9ab7;font-size:11px;padding:8px 0 18px}
+@media(max-width:480px){body{padding:10px}.header{padding:10px 8px 19px}.logo{width:56px;height:56px;font-size:26px}h1{font-size:22px}.panel{padding:11px;border-radius:15px}.panel-title h2{font-size:14px}th{font-size:12px;padding:11px 5px}td{font-size:12px;padding:10px 5px}.price-input{font-size:13px;padding:10px 3px;min-width:55px}.actions{gap:8px}.actions button{width:100%}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="header">
+<div class="logo">✦</div>
+<h1>نظام النقاط</h1>
+<div class="subtitle">EduSpace · إدارة التقييمات والأسعار</div>
+</header>
+<div id="banner" class="banner"></div>
+<section class="panel">
+<div class="panel-title">
+<h2>✧ التقييمات والأسعار</h2>
+<span id="count" class="count">0 تقييم</span>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th style="width:60%">التقييمات الثمانية</th>
+<th style="width:40%">السعر</th>
+</tr>
+</thead>
+<tbody id="tableBody">
+<tr><td colspan="2" class="empty">جاري تحميل البيانات...</td></tr>
+</tbody>
+</table>
+</div>
+<div class="actions">
+<button id="saveBtn" class="save-btn" type="button">✦ إرسال التعديلات</button>
+<button id="refreshBtn" class="refresh-btn" type="button">↻ تحديث البيانات</button>
+</div>
+</section>
+<div class="footer">EduSpace · المنصة التعليمية</div>
+</div>
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbwNVJwISviw_oBPH-cMiyEgtrf0h9nmjPUixpUL4nVwyqKYhdwnthec2_OcSjMVndPi/exec";
+const $=id=>document.getElementById(id);
+let items=[];
+let originalPrices={};
+let loading=false;
+function banner(message,type="loading"){
+$("banner").textContent=message;
+$("banner").className="banner show "+type;
+}
+function clearBanner(){
+$("banner").textContent="";
+$("banner").className="banner";
+}
+function renderTable(){
+const body=$("tableBody");
+body.replaceChildren();
+$("count").textContent=items.length+" تقييم";
+if(!items.length){
+const tr=document.createElement("tr");
+const td=document.createElement("td");
+td.colSpan=2;
+td.className="empty";
+td.textContent="لا توجد تقييمات مسجلة في العمود BK.";
+tr.appendChild(td);
+body.appendChild(tr);
+return;
+}
+items.forEach(item=>{
+const tr=document.createElement("tr");
+const pointsCell=document.createElement("td");
+pointsCell.className="points-cell";
+pointsCell.textContent=String(item.points??"");
+const priceCell=document.createElement("td");
+const input=document.createElement("input");
+input.className="price-input";
+input.type="text";
+input.inputMode="text";
+input.maxLength=50;
+input.value=String(item.price??"");
+input.dataset.row=String(item.row);
+input.setAttribute("aria-label","سعر التقييم "+item.points);
+input.addEventListener("input",()=>{
+input.classList.toggle("changed",input.value!==String(originalPrices[input.dataset.row]??""));
+});
+priceCell.appendChild(input);
+tr.append(pointsCell,priceCell);
+body.appendChild(tr);
+});
+}
+async function loadData(){
+if(loading)return;
+loading=true;
+$("refreshBtn").disabled=true;
+$("saveBtn").disabled=true;
+banner("جاري تحميل بيانات النقاط...","loading");
+try{
+if(!API_URL.startsWith("https://script.google.com/"))throw new Error("ضع رابط نشر Apps Script الصحيح داخل API_URL أولًا.");
+const response=await fetch(API_URL+"?action=getPoints&_="+Date.now(),{cache:"no-store"});
+const data=await response.json();
+if(!data.success)throw new Error(data.message||"تعذر جلب البيانات");
+items=Array.isArray(data.items)?data.items:[];
+originalPrices={};
+items.forEach(item=>originalPrices[item.row]=String(item.price??""));
+renderTable();
+banner("تم تحميل البيانات بنجاح.","success");
+setTimeout(()=>{if($("banner").classList.contains("success"))clearBanner()},2200);
+}catch(error){
+banner(error.message||"تعذر الاتصال بالخادم.","error");
+$("tableBody").replaceChildren();
+const tr=document.createElement("tr");
+const td=document.createElement("td");
+td.colSpan=2;
+td.className="empty";
+td.textContent="تعذر تحميل البيانات. تحقق من رابط النشر وصلاحيات الوصول.";
+tr.appendChild(td);
+$("tableBody").appendChild(tr);
+}finally{
+loading=false;
+$("refreshBtn").disabled=false;
+$("saveBtn").disabled=false;
+}
+}
+async function saveChanges(){
+if(loading)return;
+const inputs=Array.from(document.querySelectorAll(".price-input"));
+const changes=inputs.map(input=>({
+row:Number(input.dataset.row),
+price:input.value.trim(),
+points:items.find(item=>item.row===Number(input.dataset.row))?.points,
+original:String(originalPrices[input.dataset.row]??"")
+})).filter(item=>item.price!==item.original);
+if(!changes.length){
+banner("لا توجد تعديلات جديدة لإرسالها.","loading");
+return;
+}
+for(const item of changes){
+if(!Number.isInteger(item.row)||item.row<2||!item.points||item.price.length>50){
+banner("تأكد من صحة السعر في الصف الذي عدّلته فقط.","error");
+return;
+}
+}
+loading=true;
+$("saveBtn").disabled=true;
+$("refreshBtn").disabled=true;
+inputs.forEach(input=>input.disabled=true);
+let saved=0;
+try{
+for(const change of changes){
+banner("جاري حفظ التعديلات... "+(saved+1)+" من "+changes.length,"loading");
+const response=await fetch(API_URL,{
+method:"POST",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify({action:"updatePrice",row:change.row,points:change.points,price:change.price})
+});
+const data=await response.json();
+if(!data.success)throw new Error((data.message||"تعذر تحديث السعر")+" — الصف "+change.row);
+originalPrices[change.row]=change.price;
+const item=items.find(x=>x.row===change.row);
+if(item)item.price=change.price;
+saved++;
+}
+renderTable();
+banner("تم حفظ "+saved+" سعر بنجاح.","success");
+}catch(error){
+renderTable();
+banner("تم حفظ "+saved+" من "+changes.length+" تعديل. "+(error.message||"تعذر إكمال الحفظ.")+" راجع الأسعار وحاول مجددًا.","error");
+}finally{
+loading=false;
+$("saveBtn").disabled=false;
+$("refreshBtn").disabled=false;
+document.querySelectorAll(".price-input").forEach(input=>input.disabled=false);
+}
+}
+$("saveBtn").addEventListener("click",saveChanges);
+$("refreshBtn").addEventListener("click",loadData);
+loadData();
+</script>
+</body>
+</html>
